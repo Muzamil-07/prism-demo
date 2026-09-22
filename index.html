@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prysmal Prism — Dev Harness</title>
+    <style>
+      html, body { margin: 0; background: #000; color: #fff; font-family: system-ui, sans-serif; }
+      .spacer { height: 120vh; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
+    </style>
+    <!-- Mirror the theme: GSAP + ScrollTrigger are provided globally by the host
+         site. Loaded here from a CDN only so the scroll sequence can be tested
+         in local dev. In production the widget reuses the theme's copies. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  </head>
+  <body>
+    <!-- <div class="spacer">scroll down ↓</div> -->
+
+    <!-- Mirrors the markup the PHP widget renders. Edit data-settings /
+         data-scroll-sequence to test different configurations locally. -->
+    <div
+      class="prysmal-prism"
+      data-assets-url="/"
+      data-settings='{"editMode":true,"scrollSequence":true,"sequenceBuilder":false,"introEnabled":true,"pointerInfluence":1}'
+      data-custom-json=""
+      data-scroll-sequence='[{"index":1,"name":"Fade light on scroll","easing":"out","easingPower":"power2","scroll":{"trigger":"canvas","itemStartPos":"top","windowStartPos":"top","itemEndPos":"bottom","windowEndPos":"top","startOffset":0,"endOffset":0,"scrub":1},"to":{"position":{"x":0,"y":-1.2,"z":0},"light":0}}]'
+      aria-label="Interactive Prysmal prism visualization"
+    ></div>
+
+    <!-- <div class="spacer">keep scrolling ↓</div> -->
+
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
