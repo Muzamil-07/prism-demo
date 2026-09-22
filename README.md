@@ -20,7 +20,8 @@ widget/
 ```bash
 cd prysmal-prism      # this folder
 npm install
-npm run build         # outputs dist/prysmal-prism.js (+ prysmal-prism.css)
+npm run build         # static site for Vercel / preview (dist/index.html)
+npm run build:lib     # WordPress IIFE bundle (dist/prysmal-prism.js + .css)
 ```
 
 `dist/` is fully self-contained — React, three, and drei are bundled inside.
@@ -96,4 +97,4 @@ This source tree includes the later runtime fixes that were previously applied d
 - SMAA is applied as the final post-processing pass after Bloom and LUT.
 - Canvas DPR remains capped at 1.5.
 
-Rebuild with `npm install && npm run build`, then copy the generated `dist/` assets into the child theme.
+Rebuild with `npm install && npm run build:lib`, then copy the generated `dist/` assets into the child theme.

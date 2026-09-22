@@ -2,11 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
-// Builds a single self-contained IIFE bundle (dist/prysmal-prism.js) with React,
-// three, and drei bundled inside. The only external runtime it touches is the
-// theme's global window.gsap / window.ScrollTrigger, which it reads (never
-// bundles) so it can drive scroll animations without replacing the theme copy.
-export default defineConfig({
+const shared = {
   plugins: [react()],
   define: {
     process: JSON.stringify({ env: { NODE_ENV: 'production' } }),
@@ -17,21 +13,38 @@ export default defineConfig({
   css: {
     postcss: {},
   },
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    lib: {
-      entry: resolve(__dirname, 'src/main.jsx'),
-      name: 'PrysmalPrism',
-      formats: ['iife'],
-      fileName: () => 'prysmal-prism.js',
-    },
-    rollupOptions: {
-      output: {
-        // Emit the stylesheet as prysmal-prism.css (Vite's lib mode would
-        // otherwise name it style.css) so it matches the enqueued handle.
-        assetFileNames: (assetInfo) => (assetInfo.name?.endsWith('.css') ? 'prysmal-prism.css' : '[name][extname]'),
+}
+
+// Default `vite build` is a static site (index.html) so Vercel / preview work.
+// `npm run build:lib` keeps the WordPress IIFE bundle (dist/prysmal-prism.js).
+export default defineConfig(() => {
+  if (process.env.BUILD_LIB === '1') {
+    return {
+      ...shared,
+      build: {
+        outDir: 'dist',
+        emptyOutDir: true,
+        lib: {
+          entry: resolve(__dirname, 'src/main.jsx'),
+          name: 'PrysmalPrism',
+          formats: ['iife'],
+          fileName: () => 'prysmal-prism.js',
+        },
+        rollupOptions: {
+          output: {
+            assetFileNames: (assetInfo) =>
+              assetInfo.name?.endsWith('.css') ? 'prysmal-prism.css' : '[name][extname]',
+          },
+        },
       },
+    }
+  }
+
+  return {
+    ...shared,
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
     },
-  },
+  }
 })
