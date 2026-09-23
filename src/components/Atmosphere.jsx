@@ -107,6 +107,7 @@ const vortexFragment = /* glsl */ `
   uniform float uGapT;
   uniform float uTime;
   uniform float uIntensity;
+  uniform float uDispersion;
   varying vec2 vNdc;
   ${NOISE}
 
@@ -152,7 +153,9 @@ const vortexFragment = /* glsl */ `
     // sharp cut seam.
     float bSide = max(smoothstep(-3.0, 3.0, -o * oB), smoothstep(-3.0, 3.0, dA - dB));
     // Local spray reach: A-to-B distance, measured either between or beyond B.
-    float reach = o * oB < 0.0 ? dA + dB : max(dA - dB, 0.0);
+    // Scaled by uDispersion so the spray can be pulled tight to the rim or
+    // fanned out wider without retracing edge B.
+    float reach = (o * oB < 0.0 ? dA + dB : max(dA - dB, 0.0)) * uDispersion;
     // Varies only along the path (not across it, i.e. no dA term) so the
     // falloff away from the rim stays one smooth gradient instead of reading
     // as concentric bands of different opacity.
@@ -202,6 +205,8 @@ const bokehVertex = /* glsl */ `
   attribute float aSeed;
   uniform float uTime;
   uniform float uIntensity;
+  uniform float uParticleIntensity;
+  uniform float uDispersion;
   uniform float uDpr;
   uniform vec2 uPts[N];
   uniform vec2 uPtsB[N];
@@ -254,7 +259,7 @@ const bokehVertex = /* glsl */ `
         // the twist leaking onto the wrong side.
         float dirOut = S < 0.0 ? -1.0 : 1.0;
         float d = fract(r.y * 5.0);
-        q += side * dirOut * (3.0 + d * d * (abs(S) * 0.45 + 10.0) * (0.4 + f));
+        q += side * dirOut * (3.0 + d * d * (abs(S) * 0.45 + 10.0) * uDispersion * (0.4 + f));
         q += vec2(18.0, 8.0) * (f - 0.5);
       }
       vA = pow(sin(3.14159 * f), 2.0) * mix(0.35, 1.0, h1(aSeed * 9.1)) *
@@ -271,7 +276,7 @@ const bokehVertex = /* glsl */ `
       float onEdge = step(0.45, h1(aSeed * 8.3));
       float v = pow(h1(aSeed * 6.7), 2.0) * 0.8 * (1.0 - onEdge);
       float sSign = dot(pb - q, side) < 0.0 ? -1.0 : 1.0;
-      q = mix(q, pb, v) + side * sSign * h1(aSeed * 3.7) * 4.0;
+      q = mix(q, pb, v) + side * sSign * h1(aSeed * 3.7) * 4.0 * uDispersion;
       q += vec2(sin(aSeed * 1.27 + uTime * 0.3), cos(aSeed * 0.91 + uTime * 0.27)) * 3.0;
       float salt = h1(aSeed * 8.9);
       vec3 tint = salt > 0.78 ? vec3(0.95, 0.62, 0.42) : vec3(0.42, 0.72, 0.88);
@@ -282,7 +287,7 @@ const bokehVertex = /* glsl */ `
       gl_PointSize = mix(1.5, 3.2, size * size) * uDpr;
     }
 
-    vA *= uIntensity;
+    vA *= kind < 0.5 ? uIntensity : uParticleIntensity;
     if (kind < 0.5) q.x += uOffsetX;
     gl_Position = projectionMatrix * viewMatrix * vec4(q * uScale, -2.0, 1.0);
   }
@@ -331,6 +336,7 @@ export function Atmosphere({ controls, runtimeRef }) {
           uGapT: { value: 0.5 },
           uTime: { value: 0 },
           uIntensity: { value: 0 },
+          uDispersion: { value: 1 },
         },
         vertexShader: 'varying vec2 vNdc; void main() { vNdc = position.xy; gl_Position = vec4(position.xy, 0.0, 1.0); }',
         fragmentShader: vortexFragment,
@@ -345,6 +351,8 @@ export function Atmosphere({ controls, runtimeRef }) {
         uniforms: {
           uTime: { value: 0 },
           uIntensity: { value: 0 },
+          uParticleIntensity: { value: 0 },
+          uDispersion: { value: 1 },
           uDpr: { value: 1 },
           uPts: { value: [] },
           uPtsB: { value: [] },
@@ -379,6 +387,7 @@ export function Atmosphere({ controls, runtimeRef }) {
     u.uGapT.value = path.gapT
     u.uTime.value = time
     u.uIntensity.value = controls.vortexIntensity * reveal.current
+    u.uDispersion.value = controls.vortexDispersion
 
     const b = bokeh.uniforms
     b.uTime.value = time
@@ -389,6 +398,8 @@ export function Atmosphere({ controls, runtimeRef }) {
     b.uGapT.value = path.gapT
     b.uOffsetX.value = controls.bokehOffsetX
     b.uIntensity.value = controls.bokehIntensity * reveal.current
+    b.uParticleIntensity.value = controls.particleIntensity * reveal.current
+    b.uDispersion.value = controls.vortexDispersion
   })
 
   return (
@@ -398,7 +409,7 @@ export function Atmosphere({ controls, runtimeRef }) {
           <planeGeometry args={[2, 2]} />
         </mesh>
       )}
-      {controls.bokehIntensity > 0 && (
+      {(controls.bokehIntensity > 0 || controls.particleIntensity > 0) && (
         <points geometry={bokehGeometry} material={bokeh} renderOrder={-9} frustumCulled={false} />
       )}
     </>

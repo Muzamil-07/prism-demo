@@ -628,7 +628,9 @@ export function PrismControls({
                 { label: 'Rainbow', obj: controls, key: 'rainbowIntensity', min: 0, max: 10, step: 0.05, unit: '×' },
                 { label: 'White light', obj: controls, key: 'whiteLightIntensity', min: 0, max: 3, step: 0.05, unit: '×' },
                 { label: 'Vapor band', obj: controls, key: 'vortexIntensity', min: 0, max: 2, step: 0.05, unit: '×' },
+                { label: 'Dispersion', obj: controls, key: 'vortexDispersion', min: 0, max: 5, step: 0.05, unit: '×' },
                 { label: 'Bokeh', obj: controls, key: 'bokehIntensity', min: 0, max: 2, step: 0.05, unit: '×' },
+                { label: 'Particle glow', obj: controls, key: 'particleIntensity', min: 0, max: 2, step: 0.05, unit: '×' },
                 { label: 'Bokeh L/R', obj: controls, key: 'bokehOffsetX', min: -400, max: 400, step: 5, unit: 'px' },
                 { label: 'Reflection', obj: controls, key: 'reflectionIntensity', min: 0, max: 1.5, step: 0.05, unit: '×' },
               ]

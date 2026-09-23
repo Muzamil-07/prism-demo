@@ -92,6 +92,14 @@ export const CONTROL_DEFAULTS = {
   // Shifts the whole bokeh particle field left(-)/right(+), comp-px units.
   // Lets the drifting dust be nudged off the vapor line without moving it.
   bokehOffsetX: 0,
+  // Brightness of the shed-dust + stream specks (kind 1/2), separate from
+  // bokehIntensity which now only scales the soft out-of-focus discs (kind 0)
+  // — they read as two different layers and want independent control.
+  particleIntensity: 0.3,
+  // How far the vapor sprays off the rim line, and how far the shed dust
+  // scatters into the dispersing side. 1 = as traced; lower pulls the spray
+  // tight to the line, higher fans it out wider.
+  vortexDispersion: 1,
   // Soft floor reflection mirrored under the prism's base. 0 = off.
   reflectionIntensity: 0.6,
 }
